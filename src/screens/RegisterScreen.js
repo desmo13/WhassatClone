@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, TextInput, StyleSheet, Text, View, Modal, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TextInput, StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../components/firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -10,6 +10,7 @@ function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
+  const [toastOpacity] = useState(new Animated.Value(0));
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -19,6 +20,7 @@ function RegisterScreen() {
         await createUserWithEmailAndPassword(auth, email, password);
         setIsRegistered(true);
         setError('');
+        showToast();
       } catch (error) {
         console.log(error);
         setError('Error al crear el usuario');
@@ -26,13 +28,34 @@ function RegisterScreen() {
     }
   };
 
-  const handleClosePopup = () => {
-    setIsRegistered(false);
-    // Aquí puedes agregar lógica adicional después de cerrar el popup
+  const showToast = () => {
+    Animated.sequence([
+      Animated.timing(toastOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.delay(2000),
+      Animated.timing(toastOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setIsRegistered(false));
   };
+
+  useEffect(() => {
+    if (isRegistered) {
+      showToast();
+    }
+  }, [isRegistered]);
 
   return (
     <SafeAreaView style={styles.container}>
+      <Animated.View style={[styles.toast, { opacity: toastOpacity }]}>
+        <Text style={styles.toastText}>¡Usuario creado con éxito!</Text>
+      </Animated.View>
+
       <Text style={styles.title}>Registro</Text>
       <TextInput
         placeholder="Email"
@@ -61,25 +84,6 @@ function RegisterScreen() {
         <Text style={styles.buttonText}>Registrarse</Text>
       </TouchableOpacity>
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isRegistered}
-        onRequestClose={handleClosePopup}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>¡Usuario creado con éxito!</Text>
-            <TouchableOpacity
-              style={[styles.button, styles.buttonClose]}
-              onPress={handleClosePopup}
-            >
-              <Text style={styles.buttonText}>Continuar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -127,34 +131,19 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 10,
   },
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: '#444',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 18,
-  },
-  buttonClose: {
+  toast: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    right: 20,
     backgroundColor: '#128C7E',
+    padding: 10,
+    borderRadius: 5,
+    zIndex: 1000,
+  },
+  toastText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
