@@ -5,6 +5,9 @@ export default function LoginScreen({navigation}) {
     const handle = () => {
         navigation.navigate('ChatTabs')
     }
+    const handleRegister = () => {
+        navigation.navigate('Register')
+    }
   return (
     <View style={styles.container}>
       <Text style={styles.title}>WhatsApp Clone</Text>
@@ -23,7 +26,7 @@ export default function LoginScreen({navigation}) {
       <TouchableOpacity style={styles.button} onPress={handle}>
         <Text style={styles.buttonText}>Iniciar sesión</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={[styles.button, styles.registerButton]}>
+      <TouchableOpacity style={[styles.button, styles.registerButton]} onPress={handleRegister}>
         <Text style={styles.buttonText}>Registrarse</Text>
       </TouchableOpacity>
     </View>
