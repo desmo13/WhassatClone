@@ -22,3 +22,4 @@ const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
 export { database };
+console.log("inicio")
