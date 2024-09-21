@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TextInput, StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from '../components/firebaseConfig';
+import { auth,database} from '../components/firebaseConfig';
+import { set,ref } from 'firebase/database';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 function RegisterScreen() {
@@ -17,7 +18,19 @@ function RegisterScreen() {
       setError('Las contraseñas no coinciden');
     } else {
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        await createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential)=>{
+          const user = userCredential.user;
+          console.log(user);
+          set(ref(database, 'users/'+user.uid), {
+            name: user.email,
+            email: user.email,
+            friends: {
+   
+            },
+            friendRequests: {},
+          })
+        })
         setIsRegistered(true);
         setError('');
         showToast();
