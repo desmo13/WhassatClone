@@ -1,28 +1,61 @@
 import React from 'react'
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native'
+import { auth } from '../components/firebaseConfig'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { useState } from 'react'
+import { set } from 'firebase/database'
 
 export default function LoginScreen({navigation}) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  set
     const handle = () => {
-        navigation.navigate('ChatTabs')
+      signInWithEmailAndPassword(auth, email, password)
+        .then(()=>{
+          setError('')
+          navigation.navigate('ChatTabs')
+        }).catch((error)=>{
+          if (error.code === 'auth/wrong-password') {
+            setError('Contraseña incorrecta')
+            return
+          }
+          if (error.code === 'auth/user-not-found') {
+            setError('Usuario no encontrado')
+            return
+          }
+          if (error.code === 'auth/invalid-credential') {
+            setError('Correo o contraseña incorrectos')
+            return
+          }
+          
+        })
+        
     }
     const handleRegister = () => {
         navigation.navigate('Register')
     }
   return (
     <View style={styles.container}>
+       {error ? <Text style={styles.error}>{error}</Text> : null}
       <Text style={styles.title}>WhatsApp Clone</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
         placeholderTextColor="#999"
         keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Contraseña"
         placeholderTextColor="#999"
         secureTextEntry
+        value={password}
+        onChangeText={setPassword}
       />
+       
       <TouchableOpacity style={styles.button} onPress={handle}>
         <Text style={styles.buttonText}>Iniciar sesión</Text>
       </TouchableOpacity>
@@ -34,6 +67,10 @@ export default function LoginScreen({navigation}) {
 }
 
 const styles = StyleSheet.create({
+  error: {
+    color: 'red',
+    marginTop: 10,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
