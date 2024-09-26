@@ -1,14 +1,18 @@
-
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import findUserEmail from '../components/findUserEmail';
 
 const chatData = [
   { id: '1', name: 'Juan Pérez', lastMessage: 'Hola, ¿cómo estás?' },
   { id: '2', name: 'María García', lastMessage: '¿Nos vemos mañana?' },
   { id: '3', name: 'Carlos López', lastMessage: 'Gracias por la información' },
-]
+];
 
 export default function ChatListScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [friendEmail, setFriendEmail] = useState('');
+
   const renderChatItem = ({ item }) => (
     <TouchableOpacity style={styles.chatItem}>
       <View style={styles.avatar}>
@@ -19,13 +23,34 @@ export default function ChatListScreen() {
         <Text style={styles.lastMessage}>{item.lastMessage}</Text>
       </View>
     </TouchableOpacity>
-  )
+  );
+
+  const handleAddFriend = () => {
+    if (friendEmail.trim() === '') {
+      Alert.alert('Error', 'Por favor, ingresa un correo electrónico válido');
+      return;
+    }
+    // Aquí puedes agregar la lógica para enviar la solicitud de amistad
+    console.log('Enviando solicitud de amistad a:', friendEmail);
+    findUserEmail(friendEmail, (user) => {
+      if (user) {
+        Alert.alert('Éxito', 'Solicitud de amistad enviada');
+        console.log('Enviando solicitud de amistad a:'+ user.email);
+        console.log(user);
+      } else {
+        Alert.alert('Error', 'Correo electrónico no válido');
+      }
+    });
+    setModalVisible(false);
+    setFriendEmail('');
+    Alert.alert('Éxito', 'Solicitud de amistad enviada');
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Chats</Text>
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
           <Ionicons name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -34,8 +59,37 @@ export default function ChatListScreen() {
         renderItem={renderChatItem}
         keyExtractor={(item) => item.id}
       />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Añadir amigo</Text>
+            <TextInput
+              style={styles.input}
+              onChangeText={setFriendEmail}
+              value={friendEmail}
+              placeholder="Correo electrónico del amigo"
+              placeholderTextColor="#999"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={[styles.button, styles.buttonCancel]} onPress={() => setModalVisible(false)}>
+                <Text style={styles.buttonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.button, styles.buttonSend]} onPress={handleAddFriend}>
+                <Text style={styles.buttonText}>Enviar solicitud</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -96,4 +150,65 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
   },
-})
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    backgroundColor: '#444',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: '80%',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  input: {
+    height: 40,
+    width: '100%',
+    borderColor: '#666',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 20,
+    color: '#fff',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  button: {
+    borderRadius: 5,
+    padding: 10,
+    elevation: 2,
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  buttonCancel: {
+    backgroundColor: '#FF3B30',
+  },
+  buttonSend: {
+    backgroundColor: '#25D366',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
