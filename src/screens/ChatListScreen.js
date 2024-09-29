@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import findUserEmail from '../components/findUserEmail';
 import sendFriendRequest from '../components/sendFriendRequest';
 import { auth } from '../components/firebaseConfig';
-const chatData = [
-  { id: '1', name: 'Juan Pérez', lastMessage: 'Hola, ¿cómo estás?' },
-  { id: '2', name: 'María García', lastMessage: '¿Nos vemos mañana?' },
-  { id: '3', name: 'Carlos López', lastMessage: 'Gracias por la información' },
-];
+import listenForFriendRequests from '../components/listenFriendsRequest';
 
 export default function ChatListScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
+  const [chatData, setChatData] = useState([
+    { id: '1', name: 'Juan Pérez', lastMessage: 'Hola, ¿cómo estás?' },
+    { id: '2', name: 'María García', lastMessage: '¿Nos vemos mañana?' },
+    { id: '3', name: 'Carlos López', lastMessage: 'Gracias por la información' },
+  ]);
 
   const renderChatItem = ({ item }) => (
     <TouchableOpacity style={styles.chatItem}>
@@ -31,23 +32,31 @@ export default function ChatListScreen() {
       Alert.alert('Error', 'Por favor, ingresa un correo electrónico válido');
       return;
     }
-    // Aquí puedes agregar la lógica para enviar la solicitud de amistad
-    console.log('Enviando solicitud de amistad a:', friendEmail);
+    // Lógica para enviar la solicitud de amistad
     findUserEmail(friendEmail, (user) => {
-
       if (user) {
-        Alert.alert('Éxito', 'Solicitud de amistad enviada');
         const currentUser = auth.currentUser;
-        sendFriendRequest(currentUser.uid, user);
-        console.log(user);
+        sendFriendRequest(currentUser.uid, user, currentUser.email);
+        Alert.alert('Éxito', 'Solicitud de amistad enviada');
       } else {
         Alert.alert('Error', 'Correo electrónico no válido');
       }
     });
     setModalVisible(false);
     setFriendEmail('');
-    Alert.alert('Éxito', 'Solicitud de amistad enviada');
   };
+
+  // useEffect con lista de dependencias para evitar renders infinitos
+  useEffect(() => {
+    const unsubscribe = listenForFriendRequests(auth.currentUser.uid, (friendRequests) => {
+      if (friendRequests) {
+
+        // Actualiza el estado sin sobrescribir el anterior
+        setChatData((prevChatData) => [...prevChatData, ...friendRequests]);
+      }
+    });
+    return () => unsubscribe && unsubscribe(); // Cleanup de listener
+  }, []); // Lista de dependencias vacía para ejecutar el efecto solo una vez
 
   return (
     <View style={styles.container}>
