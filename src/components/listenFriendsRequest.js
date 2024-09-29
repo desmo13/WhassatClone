@@ -12,8 +12,8 @@ const listenForFriendRequests = (currentUser, callback) => {
         if (friendRequests) {
             // Recorrer las solicitudes de amistad y agregar a updatedChatData
             for (let key in friendRequests) {
-                if (friendRequests[key] === true) {
-                    console.log('Friend request from:', friendRequests[key]);
+                if (friendRequests[key].state === true) {
+                    console.log('Friend request from:', friendRequests[key].name);
                     updatedChatData.push({
                         id: key,
                         name: friendRequests[key].name || 'Amigo desconocid0',  // Ajusta si tienes el nombre en otro lugar
