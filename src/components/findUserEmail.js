@@ -8,13 +8,14 @@ const findUserEmail = (email,callback) => {
         const user = snapshot.val();
             for (let key in user) {
                 if (user[key].email === email) {
-                    foundUser = user[key];
+                    foundUser = key;
+                    
                     break;
                 }
             }
 
         if (foundUser) {
-            console.log("Found user with email: " + foundUser.email);
+            
             callback(foundUser);
         }   
         if (!foundUser) {

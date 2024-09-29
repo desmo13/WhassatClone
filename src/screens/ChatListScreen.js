@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, TextInput, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import findUserEmail from '../components/findUserEmail';
-
+import sendFriendRequest from '../components/sendFriendRequest';
+import { auth } from '../components/firebaseConfig';
 const chatData = [
   { id: '1', name: 'Juan Pérez', lastMessage: 'Hola, ¿cómo estás?' },
   { id: '2', name: 'María García', lastMessage: '¿Nos vemos mañana?' },
@@ -33,9 +34,11 @@ export default function ChatListScreen() {
     // Aquí puedes agregar la lógica para enviar la solicitud de amistad
     console.log('Enviando solicitud de amistad a:', friendEmail);
     findUserEmail(friendEmail, (user) => {
+
       if (user) {
         Alert.alert('Éxito', 'Solicitud de amistad enviada');
-        console.log('Enviando solicitud de amistad a:'+ user.email);
+        const currentUser = auth.currentUser;
+        sendFriendRequest(currentUser.uid, user);
         console.log(user);
       } else {
         Alert.alert('Error', 'Correo electrónico no válido');
