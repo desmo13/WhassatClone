@@ -6,7 +6,7 @@ import sendFriendRequest from '../components/sendFriendRequest';
 import { auth } from '../components/firebaseConfig';
 import listenForFriendRequests from '../components/listenFriendsRequest';
 
-export default function ChatListScreen() {
+export default function ChatListScreen({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [friendEmail, setFriendEmail] = useState('');
   const [chatData, setChatData] = useState([
@@ -16,7 +16,12 @@ export default function ChatListScreen() {
   ]);
 
   const renderChatItem = ({ item }) => (
-    <TouchableOpacity style={styles.chatItem}>
+    
+    <TouchableOpacity 
+    onPress={() => navigation.navigate('ChatRoom', { item })}
+    
+    style={styles.chatItem}>
+      
       <View style={styles.avatar}>
         <Text style={styles.avatarText}>{item.name[0]}</Text>
       </View>
